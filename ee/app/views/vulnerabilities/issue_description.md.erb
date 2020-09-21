@@ -1,0 +1,58 @@
+### <%= _("Description") %>:
+
+<%= vulnerability.description %>
+
+<% if vulnerability.severity.present? %>
+* <%= _("Severity") %>: <%= vulnerability.severity %>
+<% end %>
+<% if vulnerability.confidence.present? %>
+* <%= _("Confidence") %>: <%= vulnerability.confidence %>
+<% end %>
+<% if vulnerability.try(:file) %>
+* <%= _("Location") %>: [<%= vulnerability.location_text %>](<%= vulnerability.location_link %>)
+<% end %>
+
+<% if vulnerability.solution.present? %>
+### <%= _("Solution") %>:
+
+<%= vulnerability.solution %>
+<% end %>
+
+<% if vulnerability.identifiers.present? %>
+### <%= _("Identifiers") %>:
+
+<% vulnerability.identifiers.each do |identifier| %>
+<% if identifier[:url].present? %>
+* [<%= identifier[:name] %>](<%= identifier[:url] %>)
+<% else %>
+* <%= identifier[:name] %>
+<% end %>
+<% end %>
+<% end %>
+
+<% if vulnerability.links.present? %>
+### <%= _("Links") %>:
+
+<% vulnerability.links.each do |link| %>
+<% if link[:name].present? %>
+* [<%= link[:name] %>](<%= link[:url] %>)
+<% else %>
+* <%= link[:url] %>
+<% end %>
+<% end %>
+<% end %>
+
+<% if vulnerability.remediations.present? && vulnerability.remediations.any? %>
+### <%= _("Remediations") %>:
+
+<% vulnerability.remediations.each do |remediation| %>
+  <details>
+  <summary><%= _("Patch to apply") %></summary>
+
+  ```diff
+  <%= Base64.decode64(remediation[:diff]) %>
+  ```
+
+  </details>
+<% end %>
+<% end %>

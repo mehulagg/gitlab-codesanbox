@@ -1,0 +1,96 @@
+/* EE Trial Specific Stylesheet */
+
+/* Main Nav Overrides */
+.navbar-gitlab.has-trial-banner {
+  top: 52px;
+}
+
+.page-with-sidebar.has-trial-banner {
+  /* Secondary Nav Overrides - Old Nav */
+  margin-top: 102px;
+
+  /* Sidebar Nav Overrides - New Nav */
+  .nav-sidebar {
+    top: 102px;
+  }
+}
+
+/* Trial Banner */
+.gitlab-ee-license-banner.alert {
+  @include media-breakpoint-down(md) {
+    img {
+      width: 30px;
+    }
+
+    a {
+      margin-left: 0 !important;
+
+      &:last-child {
+        margin-top: 1rem;
+      }
+    }
+  }
+
+  .close {
+    opacity: 0.6;
+  }
+}
+
+/* Trial License Install Modal */
+.modal-upload-trial-license {
+  .modal-body-contents {
+    .trial-activated-graphic {
+      display: flex;
+      justify-content: center;
+
+      svg {
+        width: 90px;
+        height: 90px;
+      }
+    }
+
+    .confirmation-title,
+    .confirmation-desc {
+      text-align: center;
+    }
+
+    .confirmation-desc {
+      max-width: 80%;
+      margin: auto;
+      color: $gl-text-color-secondary;
+    }
+
+    .trial-license-preview {
+      max-height: 300px;
+      word-wrap: break-word;
+      word-break: break-all;
+      overflow-y: auto;
+    }
+  }
+
+  /* Pure CSS License Key Preview Toggle */
+  .trial-license-preview,
+  .show-license,
+  .hide-license:target {
+    display: none;
+  }
+
+  .hide-license,
+  .hide-license:target + .show-license,
+  .hide-license:target ~ .trial-license-preview {
+    display: block;
+  }
+
+  .show-license,
+  .hide-license {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 18px;
+    color: $gray-600;
+
+    &:hover {
+      text-decoration: none;
+      color: $gray-900;
+    }
+  }
+}

@@ -1,0 +1,8 @@
+- page_title _('Bitbucket import')
+- header_title _('Projects'), root_path
+
+%h3.page-title
+  %i.fa.fa-bitbucket
+  = _('Import projects from Bitbucket')
+
+= render 'import/githubish_status', provider: 'bitbucket'

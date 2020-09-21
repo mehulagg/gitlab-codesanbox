@@ -1,0 +1,95 @@
+# frozen_string_literal: true
+
+module Gitlab
+  module Elastic
+    # Always prefer to use the full class namespace when specifying a
+    # superclass inside a module, because autoloading can occur in a
+    # different order between execution environments.
+    class ProjectSearchResults < Gitlab::Elastic::SearchResults
+      attr_reader :project, :repository_ref, :filters
+
+      def initialize(current_user, query, project:, repository_ref: nil, filters: {})
+        @project = project
+        @repository_ref = repository_ref.presence || project.default_branch
+
+        super(current_user, query, [project.id], public_and_internal_projects: false, filters: filters)
+      end
+
+      private
+
+      def blobs(page: 1, per_page: DEFAULT_PER_PAGE)
+        return Kaminari.paginate_array([]) unless Ability.allowed?(@current_user, :download_code, project)
+        return Kaminari.paginate_array([]) if project.empty_repo? || query.blank?
+        return Kaminari.paginate_array([]) unless root_ref?
+
+        strong_memoize(:blobs) do
+          project.repository.__elasticsearch__.elastic_search_as_found_blob(
+            query,
+            page: (page || 1).to_i,
+            per: per_page
+          )
+        end
+      end
+
+      def wiki_blobs(page: 1, per_page: DEFAULT_PER_PAGE)
+        return Kaminari.paginate_array([]) unless Ability.allowed?(@current_user, :read_wiki, project)
+
+        if project.wiki_enabled? && !project.wiki.empty? && query.present?
+          strong_memoize(:wiki_blobs) do
+            project.wiki.__elasticsearch__.elastic_search_as_wiki_page(
+              query,
+              page: (page || 1).to_i,
+              per: per_page
+            )
+          end
+        else
+          Kaminari.paginate_array([])
+        end
+      end
+
+      def notes
+        strong_memoize(:notes) do
+          opt = {
+            project_ids: limit_project_ids,
+            current_user: @current_user,
+            public_and_internal_projects: @public_and_internal_projects
+          }
+
+          Note.elastic_search(query, options: opt)
+        end
+      end
+
+      def commits(page: 1, per_page: DEFAULT_PER_PAGE, preload_method: nil)
+        return Kaminari.paginate_array([]) unless Ability.allowed?(@current_user, :download_code, project)
+
+        if project.empty_repo? || query.blank?
+          Kaminari.paginate_array([])
+        else
+          # We use elastic for default branch only
+          if root_ref?
+            strong_memoize(:commits) do
+              project.repository.find_commits_by_message_with_elastic(
+                query,
+                page: (page || 1).to_i,
+                per_page: per_page,
+                preload_method: preload_method
+              )
+            end
+          else
+            offset = per_page * ((page || 1) - 1)
+
+            Kaminari.paginate_array(
+              project.repository.find_commits_by_message(query),
+              offset: offset,
+              limit: per_page
+            )
+          end
+        end
+      end
+
+      def root_ref?
+        project.root_ref?(repository_ref)
+      end
+    end
+  end
+end
