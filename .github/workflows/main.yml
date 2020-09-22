@@ -22,8 +22,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Count lines of code 
-        run: |
-          apt install cloc
-          cloc .
+      - name: scc-docker-action
+        uses: iRyanBell/scc-docker-action@v1.0.0
+
